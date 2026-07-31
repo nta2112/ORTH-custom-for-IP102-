@@ -108,7 +108,8 @@ def load_voc_instances(dirname: str, split: str, class_names: Union[List[str], T
     ids = []
     id2fileids = {}
     for fileid in fileids:
-        id = int(fileid.split('.')[0])
+        clean_id = ''.join(filter(str.isdigit, fileid.split('.')[0]))
+        id = int(clean_id) if clean_id else hash(fileid)
         ids.append(id)
         id2fileids[id] = fileid
 
