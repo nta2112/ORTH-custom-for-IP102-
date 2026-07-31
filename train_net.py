@@ -245,12 +245,48 @@ def setup(args):
     add_model_ema_configs(cfg)
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    
+    # Dynamic 1-epoch scale based on task training split text file
+    split_path = os.path.join("./datasets/ImageSets/Main", args.task + ".txt")
+    if os.path.exists(split_path):
+        with open(split_path, 'r') as f:
+            lines = [line.strip() for line in f if line.strip()]
+        num_images = len(lines)
+        ims_per_batch = cfg.SOLVER.IMS_PER_BATCH
+        max_iter = max(1, (num_images + ims_per_batch - 1) // ims_per_batch)
+        
+        cfg.defrost()
+        cfg.SOLVER.MAX_ITER = max_iter
+        cfg.SOLVER.STEPS = (int(max_iter * 0.8), int(max_iter * 0.9))
+        cfg.TEST.EVAL_PERIOD = max_iter
+        print(f"[Dynamic Epoch] {num_images} images, batch size {ims_per_batch} -> MAX_ITER = {max_iter}")
+    
     cfg.freeze()
     default_setup(cfg, args)
     return cfg
 
 
 def main(args):
+    if args.task.startswith("IP102"):
+        # Load classes dynamically from JSON
+        json_path = "/kaggle/input/datasets/nta212/ip102-for-object-detection/train.json"
+        if not os.path.exists(json_path):
+            json_path = "./datasets/IP102/train.json"
+            
+        if os.path.exists(json_path):
+            import json
+            with open(json_path, 'r') as f:
+                data = json.load(f)
+            categories = sorted(data['categories'], key=lambda x: x['id'])
+            class_names = [cat['name'] for cat in categories]
+            from core.pascal_voc import VOC_COCO_CLASS_NAMES
+            VOC_COCO_CLASS_NAMES["IP102"] = tuple(class_names + ["unknown"])
+            print(f"Dynamically registered IP102 classes: {VOC_COCO_CLASS_NAMES['IP102']}")
+        else:
+            from core.pascal_voc import VOC_COCO_CLASS_NAMES
+            VOC_COCO_CLASS_NAMES["IP102"] = tuple([f"class_{i}" for i in range(25)] + ["unknown"])
+            print("Warning: IP102 train.json not found, registered fallback dummy classes.")
+
     cfg = setup(args)
     data_register = Register('./datasets/', args.task, cfg)
     data_register.register_dataset()
@@ -270,7 +306,20 @@ def main(args):
 
     trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
-    return trainer.train()
+    res = trainer.train()
+    
+    # Copy final model checkpoint to a task-specific filename
+    if comm.is_main_process():
+        import shutil
+        src_path = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+        if os.path.exists(src_path):
+            task_clean = args.task.replace("/", "_")
+            dest_name = f"model_{task_clean}.pth"
+            dest_path = os.path.join(cfg.OUTPUT_DIR, dest_name)
+            shutil.copy(src_path, dest_path)
+            print(f"Copied final model checkpoint to {dest_path}")
+            
+    return res
 
 
 if __name__ == "__main__":

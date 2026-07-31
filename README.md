@@ -1,9 +1,16 @@
-# OrthogonalDet
-Code for CVPR 2024 paper [Exploring Orthogonality in Open World Object Detection](https://openaccess.thecvf.com/content/CVPR2024/papers/Sun_Exploring_Orthogonality_in_Open_World_Object_Detection_CVPR_2024_paper.pdf).
+# IP102 Continual Learning
 
-<p align="center">
-    <img src="assets/intro.png" alt="OrthogonalDet" width=60%>
-</p>
+Code for incremental object detection on IP102 dataset with dynamic task splitting and orthogonal training strategy.
+
+## Requirements
+- Linux or macOS with Python ≥ 3.8.
+- Install [PyTorch ≥ 1.9.0, torchvision](https://pytorch.org/#install),
+  [Detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html),
+  timm, and einops.
+- Prepare datasets:
+  - Download [IP102 dataset](https://github.com/peng-zhihui/IP102).
+  - Move all images to `datasets/JPEGImages` and annotations to `datasets/Annotations`.
+  - Run `python prepare_ip102.py` to generate task splits and configuration files.
 
 ## Requirements
 - Linux or macOS with Python ≥ 3.8.
