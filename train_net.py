@@ -269,9 +269,17 @@ def setup(args):
 def main(args):
     if args.task.startswith("IP102"):
         # Load classes dynamically from JSON
-        json_path = "/kaggle/input/datasets/nta212/ip102-for-object-detection/train.json"
-        if not os.path.exists(json_path):
-            json_path = "./datasets/IP102/train.json"
+        json_paths = [
+            "/kaggle/input/datasets/nta212/ip102-for-object-detection/train.json",
+            "/kaggle/input/nta212/ip102-for-object-detection/train.json",
+            "/kaggle/input/ip102-for-object-detection/train.json",
+            "./datasets/IP102/train.json"
+        ]
+        json_path = None
+        for p in json_paths:
+            if os.path.exists(p):
+                json_path = p
+                break
             
         if os.path.exists(json_path):
             import json
