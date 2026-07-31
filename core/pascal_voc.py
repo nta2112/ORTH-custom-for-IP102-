@@ -144,6 +144,8 @@ def load_voc_instances(dirname: str, split: str, class_names: Union[List[str], T
             cls = obj.find("name").text
             if cls in VOC_CLASS_NAMES_COCOFIED:
                 cls = BASE_VOC_CLASS_NAMES[VOC_CLASS_NAMES_COCOFIED.index(cls)]
+            if cls not in class_names:
+                continue
             if cfg.TEST.MASK and ('test' not in split):
                 if class_names.index(cls) not in allowed_class:
                     continue
