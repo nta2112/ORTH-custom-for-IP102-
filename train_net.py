@@ -246,21 +246,21 @@ def setup(args):
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     
-    # Dynamic 1-epoch scale based on task training split text file
+    # Dynamic 2-epoch scale based on task training split text file
     split_path = os.path.join("./datasets/ImageSets/Main", args.task + ".txt")
     if os.path.exists(split_path):
         with open(split_path, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
         num_images = len(lines)
         ims_per_batch = cfg.SOLVER.IMS_PER_BATCH
-        max_iter = max(1, (num_images + ims_per_batch - 1) // ims_per_batch)
+        max_iter = max(1, (num_images + ims_per_batch - 1) // ims_per_batch) * 2
         
         cfg.defrost()
         cfg.SOLVER.MAX_ITER = max_iter
         cfg.SOLVER.STEPS = (int(max_iter * 0.8), int(max_iter * 0.9))
         cfg.SOLVER.WARMUP_ITERS = min(100, max_iter // 10)
         cfg.TEST.EVAL_PERIOD = max_iter
-        print(f"[Dynamic Epoch] {num_images} images, batch size {ims_per_batch} -> MAX_ITER = {max_iter}, WARMUP_ITERS = {cfg.SOLVER.WARMUP_ITERS}")
+        print(f"[Dynamic Epoch] {num_images} images, batch size {ims_per_batch} -> 2 Epochs, MAX_ITER = {max_iter}, WARMUP_ITERS = {cfg.SOLVER.WARMUP_ITERS}")
     
     cfg.freeze()
     default_setup(cfg, args)
