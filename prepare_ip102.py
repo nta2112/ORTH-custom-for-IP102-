@@ -159,7 +159,7 @@ def main():
     # base.yaml
     base_content = """MODEL:
   META_ARCHITECTURE: "RandBox"
-  WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
   PIXEL_MEAN: [123.675, 116.280, 103.530]
   PIXEL_STD: [58.395, 57.120, 57.375]
   BACKBONE:
@@ -175,7 +175,7 @@ def main():
     POOLER_RESOLUTION: 7
     POOLER_SAMPLING_RATIO: 2
 SOLVER:
-  IMS_PER_BATCH: 12
+  IMS_PER_BATCH: 8
   BASE_LR: 0.000025
   STEPS: (60000, 80000)
   MAX_ITER: 90000
@@ -212,7 +212,7 @@ OUTPUT_DIR: "output/IP102/"
     # t1.yaml
     t1_content = """_BASE_: "base.yaml"
 MODEL:
-  WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
   RESNETS:
     DEPTH: 50
     STRIDE_IN_1X1: False
@@ -240,7 +240,7 @@ INPUT:
     def write_task_yaml(task_name, prev_intro, cur_intro, prev_classes, mask):
         content = f"""_BASE_: "base.yaml"
 MODEL:
-  WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
   RESNETS:
     DEPTH: 50
     STRIDE_IN_1X1: False
