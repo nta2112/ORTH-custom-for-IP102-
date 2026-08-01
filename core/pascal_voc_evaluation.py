@@ -508,7 +508,11 @@ def voc_eval(detpath, annopath, imagesetfile, classname, ovthresh=0.5, use_07_me
     # If so, it is an unknown object that was classified as known.
     is_unk = np.zeros(nd)
     for d in range(nd):
-        R = unknown_class_recs[mapping[int(image_ids[d])]]
+        try:
+            img_key = int(image_ids[d])
+        except ValueError:
+            img_key = image_ids[d]
+        R = unknown_class_recs[mapping[img_key]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R["bbox"].astype(float)
