@@ -375,10 +375,14 @@ def voc_eval(detpath, annopath, imagesetfile, classname, ovthresh=0.5, use_07_me
     mapping = {}  # follow RandBox to map image id to image name
     for imagename in imagenames:
         rec = parse_rec(annopath.format(imagename), tuple(known_classes))
-        if rec is not None and int(imagename) not in mapping:
+        try:
+            img_key = int(imagename)
+        except ValueError:
+            img_key = imagename
+        if rec is not None and img_key not in mapping:
             recs[imagename] = rec
             imagenames_filtered.append(imagename)
-            mapping[int(imagename)] = imagename
+            mapping[img_key] = imagename
 
     imagenames = imagenames_filtered
 
@@ -420,7 +424,11 @@ def voc_eval(detpath, annopath, imagesetfile, classname, ovthresh=0.5, use_07_me
     #     return tp, fp, 0
     #     print(2,image_ids)
     for d in range(nd):
-        R = class_recs[mapping[int(image_ids[d])]]
+        try:
+            img_key = int(image_ids[d])
+        except ValueError:
+            img_key = image_ids[d]
+        R = class_recs[mapping[img_key]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R["bbox"].astype(float)
