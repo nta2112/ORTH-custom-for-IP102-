@@ -258,8 +258,9 @@ def setup(args):
         cfg.defrost()
         cfg.SOLVER.MAX_ITER = max_iter
         cfg.SOLVER.STEPS = (int(max_iter * 0.8), int(max_iter * 0.9))
+        cfg.SOLVER.WARMUP_ITERS = min(100, max_iter // 10)
         cfg.TEST.EVAL_PERIOD = max_iter
-        print(f"[Dynamic Epoch] {num_images} images, batch size {ims_per_batch} -> MAX_ITER = {max_iter}")
+        print(f"[Dynamic Epoch] {num_images} images, batch size {ims_per_batch} -> MAX_ITER = {max_iter}, WARMUP_ITERS = {cfg.SOLVER.WARMUP_ITERS}")
     
     cfg.freeze()
     default_setup(cfg, args)
