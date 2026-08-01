@@ -64,7 +64,12 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
             boxes = instances.pred_boxes.tensor.numpy()
             scores = instances.scores.tolist()
             classes = instances.pred_classes.tolist()
-            for box, score, cls in zip(boxes, scores, classes):
+            
+            # Combine, sort by score descending, and limit to top 100 detections per image
+            preds = list(zip(scores, classes, boxes))
+            preds = sorted(preds, key=lambda x: x[0], reverse=True)[:100]
+            
+            for score, cls, box in preds:
                 if score < self.score_thresh:
                     continue
                 if cls == -100:
@@ -404,6 +409,12 @@ def voc_eval(detpath, annopath, imagesetfile, classname, ovthresh=0.5, use_07_me
     #     print(1,detfile)
     with open(detfile, "r") as f:
         lines = f.readlines()
+    # Limit to top 20,000 predictions to avoid CPU bottleneck
+    if len(lines) > 20000:
+        try:
+            lines = sorted(lines, key=lambda x: float(x.strip().split(" ")[1]), reverse=True)[:20000]
+        except Exception:
+            pass
     #     print(2,lines)
     splitlines = [x.strip().split(" ") for x in lines]
     image_ids = [x[0] for x in splitlines]
