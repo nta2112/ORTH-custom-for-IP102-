@@ -156,10 +156,18 @@ def main():
     # 4. Generate configs/IP102/ base and task yamls
     os.makedirs("./configs/IP102", exist_ok=True)
     
+    sowodb_weight = "/kaggle/input/models/chienkhu/orthogonaldet-on-sowodb/pytorch/default/1/ours_s4_463.pth"
+    if os.path.exists(sowodb_weight):
+        base_weight = sowodb_weight
+        print(f"Using S-OWODB pre-trained weight: {base_weight}")
+    else:
+        base_weight = "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
+        print(f"Using default COCO pre-trained weight: {base_weight}")
+    
     # base.yaml
-    base_content = """MODEL:
+    base_content = f"""MODEL:
   META_ARCHITECTURE: "RandBox"
-  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
+  WEIGHTS: "{base_weight}"
   PIXEL_MEAN: [123.675, 116.280, 103.530]
   PIXEL_STD: [58.395, 57.120, 57.375]
   BACKBONE:
@@ -211,9 +219,9 @@ OUTPUT_DIR: "output/IP102/"
         f.write(base_content)
         
     # t1.yaml
-    t1_content = """_BASE_: "base.yaml"
+    t1_content = f"""_BASE_: "base.yaml"
 MODEL:
-  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
+  WEIGHTS: "{base_weight}"
   RESNETS:
     DEPTH: 50
     STRIDE_IN_1X1: False
@@ -241,7 +249,7 @@ INPUT:
     def write_task_yaml(task_name, prev_intro, cur_intro, prev_classes, mask):
         content = f"""_BASE_: "base.yaml"
 MODEL:
-  WEIGHTS: "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
+  WEIGHTS: "{base_weight}"
   RESNETS:
     DEPTH: 50
     STRIDE_IN_1X1: False
